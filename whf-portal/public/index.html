@@ -1,0 +1,832 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Portal de Documentos — WHF · Oriental</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Syne:wght@700;800&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --navy:#1B2A4A; --orange:#F7941D; --orangeLight:#ffb347;
+    --bg:#F4F6FA; --surface:#FFFFFF; --surface2:#EEF1F7;
+    --border:#D5DCE8; --text:#1B2A4A; --muted:#7A8AAA;
+    --success:#16a34a; --danger:#dc2626; --blue:#2563eb;
+    --teal:#0d9488; --purple:#7c3aed;
+  }
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body { background:var(--bg); font-family:'DM Sans',sans-serif; color:var(--text); }
+
+  /* TOPBAR */
+  .topbar { background:var(--navy); border-bottom:4px solid var(--orange); padding:0 32px; height:58px; display:flex; align-items:center; justify-content:space-between; box-shadow:0 2px 12px rgba(27,42,74,0.18); }
+  .tb-left { display:flex; align-items:center; gap:16px; }
+  .logo-box { background:#fff; border-radius:7px; padding:4px 10px; }
+  .logo-text .whf { color:var(--navy); font-size:14px; font-weight:800; font-family:'Syne',sans-serif; }
+  .logo-text .fin { color:var(--orange); font-size:8px; font-weight:700; letter-spacing:2px; display:block; margin-top:-2px; font-family:'Syne',sans-serif; }
+  .tb-div { width:1px; height:26px; background:rgba(255,255,255,0.15); }
+  .tb-title { font-size:13px; font-weight:500; color:rgba(255,255,255,0.8); }
+  .tb-right { display:flex; align-items:center; gap:10px; }
+  .badge { font-size:11px; font-weight:600; padding:4px 12px; border-radius:20px; }
+  .badge-prod { background:rgba(22,163,74,0.18); color:var(--success); border:1px solid rgba(22,163,74,0.35); }
+  .badge-ver { background:rgba(247,148,29,0.18); color:var(--orange); border:1px solid rgba(247,148,29,0.35); }
+
+  /* HERO */
+  .hero { background:var(--navy); padding:20px 32px 18px; }
+  .hero-inner { max-width:1040px; margin:0 auto; }
+  .hero h1 { font-family:'Syne',sans-serif; font-size:20px; font-weight:800; color:#fff; margin-bottom:3px; }
+  .hero h1 span { color:var(--orange); }
+  .hero p { color:rgba(255,255,255,0.45); font-size:12px; }
+
+  /* CASE INFO */
+  .case-wrap { max-width:1040px; margin:0 auto; padding:18px 32px 0; }
+  .case-card { background:var(--surface); border:1px solid var(--border); border-radius:12px; padding:16px 20px; box-shadow:0 1px 4px rgba(27,42,74,0.06); }
+  .case-row { display:grid; grid-template-columns:1fr 1.3fr 1.3fr 1.6fr 1.6fr; gap:14px; }
+  .cf label { font-size:10px; text-transform:uppercase; letter-spacing:0.8px; color:var(--muted); display:block; margin-bottom:4px; font-weight:700; }
+  .cf input, .cf select { background:var(--surface2); border:1.5px solid var(--border); border-radius:8px; color:var(--text); font-family:'DM Sans',sans-serif; font-size:13px; padding:8px 12px; width:100%; outline:none; transition:all 0.15s; font-weight:500; }
+  .cf input:focus, .cf select:focus { border-color:var(--orange); background:#fff; }
+
+  /* PROGRESS */
+  .progress-wrap { max-width:1040px; margin:0 auto; padding:16px 32px 0; display:flex; align-items:center; gap:16px; }
+  .progress-block { flex:1; }
+  .progress-info { display:flex; justify-content:space-between; margin-bottom:6px; }
+  .progress-info span { font-size:12px; color:var(--muted); }
+  .progress-info strong { font-size:12px; color:var(--orange); font-weight:700; }
+  .bar-bg { background:var(--surface2); border-radius:99px; height:6px; border:1px solid var(--border); }
+  .bar-fill { background:linear-gradient(90deg,var(--orange),var(--orangeLight)); height:6px; border-radius:99px; transition:width 0.4s; }
+  .reset-btn { background:var(--surface); border:1.5px solid var(--border); border-radius:8px; padding:7px 12px; font-size:11px; font-weight:600; color:var(--muted); cursor:pointer; flex-shrink:0; font-family:'DM Sans',sans-serif; }
+  .reset-btn:hover { border-color:var(--orange); color:var(--orange); }
+
+  /* MAIN */
+  .main { max-width:1040px; margin:0 auto; padding:18px 32px 60px; }
+
+  /* DOC ROW */
+  .doc-row {
+    display:grid;
+    grid-template-columns:54px 1fr 240px 60px;
+    align-items:center; gap:14px; padding:14px;
+    background:#fff; border:1px solid var(--border);
+    border-radius:10px; transition:all 0.15s;
+    box-shadow:0 1px 3px rgba(27,42,74,0.04);
+    cursor:pointer; margin-bottom:8px;
+  }
+  .doc-row:hover { box-shadow:0 2px 8px rgba(27,42,74,0.08); }
+  .doc-row.is-done { background:#f0fdf4; border-color:#bbf7d0; }
+  .doc-row.is-na { opacity:0.55; background:#fafbfd; cursor:default; }
+  .doc-row.drag-over { border:2px dashed var(--orange); background:#fffbf5; box-shadow:0 0 0 4px rgba(247,148,29,0.1); }
+
+  /* NUMBER CONTROL with up/down arrows */
+  .num-control { display:flex; align-items:center; gap:4px; }
+  .num-arrows { display:flex; flex-direction:column; gap:2px; }
+  .num-arrow {
+    background:var(--surface2); border:1px solid var(--border);
+    border-radius:4px; width:18px; height:15px;
+    display:flex; align-items:center; justify-content:center;
+    font-size:9px; cursor:pointer; color:var(--muted);
+    transition:all 0.12s; line-height:1;
+  }
+  .num-arrow:hover { background:var(--orange); color:#fff; border-color:var(--orange); }
+  .num-pill {
+    background:var(--navy); color:#fff; width:36px; height:36px;
+    border-radius:8px; display:flex; align-items:center; justify-content:center;
+    font-family:'Syne',sans-serif; font-size:14px; font-weight:800;
+    cursor:pointer; transition:all 0.15s;
+  }
+  .num-pill:hover { background:var(--orange); }
+  .doc-row.is-done .num-pill { background:var(--success); }
+  .doc-row.is-na   .num-pill { background:#94a3b8; }
+
+  /* INFO */
+  .doc-name { font-size:13px; font-weight:600; color:var(--navy); line-height:1.3; cursor:text; padding:2px 4px; margin:-2px -4px; border-radius:4px; outline:none; }
+  .doc-name:hover { background:rgba(247,148,29,0.08); }
+  .doc-name:focus { background:#fff; border:1px solid var(--orange); }
+  .doc-tags { display:flex; gap:5px; margin-top:3px; flex-wrap:wrap; }
+  .tag { font-size:10px; font-weight:700; padding:2px 8px; border-radius:20px; }
+  .tag-req { background:#f0fdf4; color:#15803d; border:1px solid #bbf7d0; }
+  .tag-opt { background:#fffbeb; color:#d97706; border:1px solid #fde68a; }
+  .tag-cob { background:#f0fdfa; color:#0d9488; border:1px solid #99f6e4; }
+  .tag-income { background:#fef3f2; color:#dc2626; border:1px solid #fecaca; }
+  .tag-auto { background:#eff6ff; color:#2563eb; border:1px solid #bfdbfe; }
+  /* Missing highlight */
+  .doc-row.is-missing .num-pill { background:#f97316; }
+  .doc-row.is-missing { border-left:3px solid #f97316; }
+
+  /* DROP ZONE */
+  .drop-zone {
+    height:54px; border-radius:8px; border:1.5px dashed var(--border);
+    background:#fff; display:flex; align-items:center; justify-content:center;
+    gap:8px; padding:0 12px; text-align:center; font-size:11px;
+    font-weight:600; color:var(--muted); pointer-events:none;
+  }
+  .drop-zone.done { background:rgba(22,163,74,0.06); border-color:#bbf7d0; color:var(--success); }
+  .drop-zone.drag-over { background:rgba(247,148,29,0.08); border-color:var(--orange); color:var(--orange); }
+  .drop-zone.na { color:#94a3b8; }
+
+  /* BUTTONS */
+  .na-btn { background:transparent; border:none; color:var(--muted); font-size:10px; font-weight:700; padding:6px 8px; border-radius:6px; cursor:pointer; font-family:'DM Sans',sans-serif; }
+  .na-btn:hover { background:var(--surface2); }
+  .doc-row.is-na .na-btn { color:var(--danger); background:#fee2e2; }
+
+  .add-btn { background:transparent; border:1.5px dashed var(--border); border-radius:10px; padding:14px; font-size:12px; font-weight:600; color:var(--muted); cursor:pointer; margin-top:4px; width:100%; font-family:'DM Sans',sans-serif; }
+  .add-btn:hover { border-color:var(--orange); color:var(--orange); }
+
+  /* SUBMIT */
+  .submit-wrap { background:var(--navy); border-radius:14px; padding:20px 24px; display:flex; align-items:center; justify-content:space-between; gap:20px; margin-top:22px; box-shadow:0 4px 20px rgba(27,42,74,0.15); border-top:4px solid var(--orange); }
+  .submit-info h3 { font-size:15px; font-weight:600; color:#fff; }
+  .submit-info p { font-size:12px; color:rgba(255,255,255,0.4); margin-top:3px; }
+  .submit-stats { display:flex; gap:22px; }
+  .sb { text-align:center; }
+  .sb .v { font-family:'Syne',sans-serif; font-size:22px; font-weight:800; }
+  .sb .l { font-size:10px; color:rgba(255,255,255,0.4); text-transform:uppercase; letter-spacing:0.5px; }
+  .vg{color:#4ade80;} .vr{color:#f87171;} .vm{color:rgba(255,255,255,0.3);}
+  .btn-submit { background:linear-gradient(135deg,var(--orange),var(--orangeLight)); color:var(--navy); border:none; border-radius:10px; padding:13px 26px; font-family:'DM Sans',sans-serif; font-size:14px; font-weight:700; cursor:pointer; transition:all 0.2s; white-space:nowrap; box-shadow:0 4px 16px rgba(247,148,29,0.3); }
+  .btn-submit:hover { transform:translateY(-1px); }
+  .btn-submit:disabled { opacity:0.3; cursor:not-allowed; transform:none; }
+
+  /* MODAL */
+  .modal-overlay { position:fixed; top:0; left:0; right:0; bottom:0; background:rgba(27,42,74,0.7); display:flex; align-items:center; justify-content:center; z-index:999; padding:20px; }
+  .modal { background:var(--surface); border-radius:16px; max-width:600px; width:100%; max-height:90vh; overflow-y:auto; box-shadow:0 20px 60px rgba(0,0,0,0.3); }
+  .modal-header { padding:24px 28px; border-bottom:1px solid var(--border); display:flex; align-items:center; justify-content:space-between; }
+  .modal-header h3 { font-family:'Syne',sans-serif; font-size:18px; font-weight:800; color:var(--navy); }
+  .modal-close { background:transparent; border:none; font-size:24px; color:var(--muted); cursor:pointer; line-height:1; padding:0; width:32px; height:32px; display:flex; align-items:center; justify-content:center; border-radius:6px; }
+  .modal-close:hover { background:var(--surface2); }
+  .modal-body { padding:24px 28px; }
+  .modal-field { margin-bottom:18px; }
+  .modal-field label { font-size:11px; text-transform:uppercase; letter-spacing:0.8px; color:var(--muted); display:block; margin-bottom:6px; font-weight:700; }
+  .modal-field input { background:var(--surface2); border:1.5px solid var(--border); border-radius:8px; color:var(--text); font-family:'DM Sans',sans-serif; font-size:13px; padding:10px 12px; width:100%; outline:none; font-weight:500; }
+  .modal-field input:focus { border-color:var(--orange); background:#fff; }
+  .modal-dropzone { border:2px dashed var(--border); border-radius:12px; padding:32px 24px; text-align:center; cursor:pointer; transition:all 0.2s; background:var(--surface2); }
+  .modal-dropzone:hover { border-color:var(--orange); background:#fffbf5; }
+  .modal-dropzone.drag-over { border-color:var(--orange); background:rgba(247,148,29,0.08); transform:scale(1.02); }
+  .mdz-icon { font-size:32px; margin-bottom:10px; }
+  .mdz-title { font-family:'Syne',sans-serif; font-size:16px; font-weight:800; color:var(--navy); margin-bottom:4px; }
+  .mdz-sub { font-size:12px; color:var(--muted); }
+  .modal-footer { padding:20px 28px; border-top:1px solid var(--border); display:flex; gap:10px; justify-content:flex-end; }
+  .modal-btn { padding:10px 20px; border-radius:8px; font-size:13px; font-weight:600; cursor:pointer; transition:all 0.15s; border:none; font-family:'DM Sans',sans-serif; }
+  .modal-btn-secondary { background:var(--surface2); color:var(--text); }
+  .modal-btn-secondary:hover { background:var(--border); }
+  .modal-btn-primary { background:var(--orange); color:#fff; }
+  .modal-btn-primary:hover { background:#e8850a; }
+
+  /* TOAST */
+  #toast { position:fixed; bottom:24px; right:24px; background:var(--orange); color:var(--navy); padding:13px 20px; border-radius:10px; font-size:14px; font-weight:700; box-shadow:0 8px 30px rgba(247,148,29,0.4); transform:translateY(80px); opacity:0; transition:all 0.3s; z-index:999; }
+  #toast.show { transform:translateY(0); opacity:1; }
+  #toast.err { background:var(--danger); color:#fff; box-shadow:0 8px 30px rgba(220,38,38,0.4); }
+  #toast.success { background:var(--success); color:#fff; box-shadow:0 8px 30px rgba(22,163,74,0.4); }
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="tb-left">
+    <div class="logo-box"><div class="logo-text"><span class="whf">WHF</span><span class="fin">FINANCIAL</span></div></div>
+    <div class="tb-div"></div>
+    <div class="tb-title" id="tbTitle">Portal de Documentos · Oriental Solar Loans</div>
+  </div>
+  <div class="tb-right">
+    <span class="badge badge-prod">✓ PRODUCCIÓN</span>
+    <span class="badge badge-ver">V2 · Drag & Drop</span>
+  </div>
+</div>
+
+<div class="hero">
+  <div class="hero-inner">
+    <h1>Carga de Expediente <span>· WindMar-Oriental Solar Loan</span></h1>
+    <p>Arrastra tus PDFs directamente sobre cada fila · o haz clic para abrir el modal</p>
+  </div>
+</div>
+
+<!-- CASE INFO -->
+<div class="case-wrap">
+  <div class="case-card">
+    <div class="case-row">
+      <div class="cf"><label>Application #</label><input type="text" id="appId" placeholder="107184" value="" /></div>
+      <div class="cf"><label>Deudor Principal</label><input type="text" id="borrower" placeholder="Nombre Apellido" value=""/></div>
+      <div class="cf"><label>Codeudor (si aplica)</label><input type="text" id="coborrower" placeholder="Nombre Apellido"/></div>
+      <div class="cf">
+        <label>Módulo / Producto</label>
+        <select id="moduleId" onchange="updateModuleBadge()">
+          <option value="68c2aed92495668a3f248835">☀️ Oriental Solar Loans</option>
+          <option value="69148fa4b34911f902270af3">🏢 Para Uso Interno WHF</option>
+          <option value="680b4e14d6ebf6166397f1eb">🏠 Roofing Loan</option>
+          <option value="6878ad6fe74373a1dc87fc4e">💰 WHF Financing</option>
+        </select>
+      </div>
+      <div class="cf">
+        <label>Perfil del Caso</label>
+        <select id="profile" onchange="loadProfile()">
+          <option value="emp_solo">💼 Empleado (Sin Codeudor)</option>
+          <option value="emp_cob">💼👥 Empleado (Con Codeudor)</option>
+          <option value="cuenta_solo">🏠 Cuenta Propia (Sin Codeudor)</option>
+          <option value="cuenta_cob">🏠👥 Cuenta Propia (Con Codeudor)</option>
+          <option value="ret_solo">🧓 Retirado (Sin Codeudor)</option>
+          <option value="ret_cob">🧓👥 Retirado (Con Codeudor)</option>
+        </select>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- PROGRESS -->
+<div class="progress-wrap">
+  <div class="progress-block">
+    <div class="progress-info">
+      <span>Progreso del expediente</span>
+      <strong id="progressText">0 / 0 archivos · 0%</strong>
+    </div>
+    <div class="bar-bg"><div class="bar-fill" id="progressBar" style="width:0%"></div></div>
+  </div>
+  <button class="reset-btn" onclick="resetOrder()">↻ Reordenar</button>
+</div>
+
+<!-- MAIN -->
+<div class="main">
+  <div id="docList"></div>
+
+  <button class="add-btn" onclick="addDoc()">+ Agregar documento adicional</button>
+
+  <!-- SUBMIT -->
+  <div class="submit-wrap">
+    <div class="submit-info">
+      <h3>Enviar expediente a DiGiFi PRODUCCIÓN</h3>
+      <p>Los archivos se subirán automáticamente al caso especificado.</p>
+    </div>
+    <div class="submit-stats">
+      <div class="sb"><div class="v vg" id="statOk">0</div><div class="l">Listos</div></div>
+      <div class="sb"><div class="v vr" id="statMissing">0</div><div class="l">Faltantes</div></div>
+      <div class="sb"><div class="v vm" id="statNA">0</div><div class="l">N/A</div></div>
+    </div>
+    <button class="btn-submit" id="submitBtn" onclick="submitDocs()">✓ Enviar a DiGiFi</button>
+  </div>
+</div>
+
+<!-- MODAL -->
+<div id="modal" style="display:none"></div>
+
+<div id="toast"></div>
+
+<script>
+// ═══════════════════════════════════════════════════════════════════
+// DIGIFI API CONFIGURATION (PRODUCTION)
+// ═══════════════════════════════════════════════════════════════════
+const DIGIFI_CONFIG = {
+  // ⚠️ La API Key está en el servidor (api/upload.js) — no se expone aquí
+  proxyURL: '/api/upload',
+};
+
+// ═══════════════════════════════════════════════════════════════════
+// PROFILES
+// ═══════════════════════════════════════════════════════════════════
+const PROFILES = {
+  emp_solo: {
+    label: 'Empleado — Sin Codeudor',
+    docs: [
+      { n:2,  name:'E-Sign Disclosure',           desc:'ESign_Disclosure',        tags:['req'] },
+      { n:3,  name:'Oriental Approval Letter',    desc:'Oriental_Approval_Letter', tags:['req','auto'] },
+      { n:4,  name:'Contrato Oriental (Bundle)',  desc:'Contrato_Oriental',       tags:['req'] },
+      { n:5,  name:'Credit Score Disclosure',     desc:'Credit_Score_Borrower',   tags:['req'] },
+      { n:6,  name:'Borrower — Soft Pull',        desc:'Soft_Pull_Borrower',      tags:['req'] },
+      { n:7,  name:'Borrower — Hard Pull',        desc:'Hard_Pull_Borrower',      tags:['req'] },
+      { n:8,  name:'Carta de Empleo',             desc:'Carta_Empleo',            tags:['req','income'] },
+      { n:9,  name:'Talonarios (últimos 3 meses)', desc:'Talonarios_3_meses',     tags:['req','income'] },
+      { n:10, name:'CATASTRO / CRIM',             desc:'CATASTRO_CRIM',           tags:['req'] },
+      { n:11, name:'Factura LUMA',                desc:'Factura_LUMA',            tags:['req'] },
+      { n:12, name:'Contrato Windmar',            desc:'Contrato_Windmar',        tags:['req'] },
+      { n:13, name:'ID Deudor',                   desc:'ID_Deudor',               tags:['req'] },
+      { n:14, name:'Diagrama Sistema GD',         desc:'Diagrama_Sistema_GD',     tags:['req'] },
+      { n:15, name:'Permit / Acuerdo NEM',        desc:'Permit_NEM',              tags:['req'] },
+      { n:16, name:'Sign Off',                    desc:'Sign_Off',                tags:['req'] },
+      { n:17, name:'Reporte de Fotos',            desc:'Reporte_Fotos',           tags:['req'] }
+    ]
+  },
+  emp_cob: {
+    label: 'Empleado — Con Codeudor',
+    docs: [
+      { n:2,  name:'E-Sign Disclosure',           desc:'ESign_Disclosure',        tags:['req'] },
+      { n:3,  name:'Oriental Approval Letter',    desc:'Oriental_Approval_Letter', tags:['req','auto'] },
+      { n:4,  name:'Contrato Oriental (Bundle)',  desc:'Contrato_Oriental',       tags:['req'] },
+      { n:5,  name:'Credit Score Disclosure (Borrower)',  desc:'Credit_Score_Borrower',   tags:['req'] },
+      { n:6,  name:'Borrower — Soft Pull',        desc:'Soft_Pull_Borrower',      tags:['req'] },
+      { n:7,  name:'Borrower — Hard Pull',        desc:'Hard_Pull_Borrower',      tags:['req'] },
+      { n:8,  name:'Credit Score (Coborrower)',   desc:'Credit_Score_Coborrower', tags:['req','cob'] },
+      { n:9,  name:'Coborrower — Soft Pull',      desc:'Soft_Pull_Coborrower',    tags:['req','cob'] },
+      { n:10, name:'Coborrower — Hard Pull',      desc:'Hard_Pull_Coborrower',    tags:['opt','cob'] },
+      { n:11, name:'Carta Empleo Deudor',         desc:'Carta_Empleo_Deudor',     tags:['req','income'] },
+      { n:12, name:'Talonarios Deudor',           desc:'Talonarios_Deudor',       tags:['req','income'] },
+      { n:13, name:'Carta Empleo Codeudor',       desc:'Carta_Empleo_Codeudor',   tags:['req','cob','income'] },
+      { n:14, name:'Talonarios Codeudor',         desc:'Talonarios_Codeudor',     tags:['req','cob','income'] },
+      { n:15, name:'CATASTRO / CRIM',             desc:'CATASTRO_CRIM',           tags:['req'] },
+      { n:16, name:'Factura LUMA',                desc:'Factura_LUMA',            tags:['req'] },
+      { n:17, name:'Contrato Windmar',            desc:'Contrato_Windmar',        tags:['req'] },
+      { n:18, name:'ID Deudor',                   desc:'ID_Deudor',               tags:['req'] },
+      { n:19, name:'ID Codeudor',                 desc:'ID_Codeudor',             tags:['req','cob'] },
+      { n:20, name:'Diagrama Sistema GD',         desc:'Diagrama_Sistema_GD',     tags:['req'] },
+      { n:21, name:'Permit / Acuerdo NEM',        desc:'Permit_NEM',              tags:['req'] },
+      { n:22, name:'Sign Off',                    desc:'Sign_Off',                tags:['req'] },
+      { n:23, name:'Reporte de Fotos',            desc:'Reporte_Fotos',           tags:['req'] }
+    ]
+  },
+  cuenta_solo: {
+    label: 'Cuenta Propia — Sin Codeudor',
+    docs: [
+      { n:2,  name:'E-Sign Disclosure',           desc:'ESign_Disclosure',        tags:['req'] },
+      { n:3,  name:'Oriental Approval Letter',    desc:'Oriental_Approval_Letter', tags:['req','auto'] },
+      { n:4,  name:'Contrato Oriental (Bundle)',  desc:'Contrato_Oriental',       tags:['req'] },
+      { n:5,  name:'Credit Score Disclosure',     desc:'Credit_Score_Borrower',   tags:['req'] },
+      { n:6,  name:'Borrower — Soft Pull',        desc:'Soft_Pull_Borrower',      tags:['req'] },
+      { n:7,  name:'Borrower — Hard Pull',        desc:'Hard_Pull_Borrower',      tags:['req'] },
+      { n:8,  name:'Planilla Certificada',        desc:'Planilla_Certificada',    tags:['req','income'] },
+      { n:9,  name:'Planilla Estatal',            desc:'Planilla_Estatal',        tags:['req','income'] },
+      { n:10, name:'Estados de Cuenta',           desc:'Estados_Cuenta',          tags:['opt','income'] },
+      { n:11, name:'CATASTRO / CRIM',             desc:'CATASTRO_CRIM',           tags:['req'] },
+      { n:12, name:'Factura LUMA',                desc:'Factura_LUMA',            tags:['req'] },
+      { n:13, name:'Contrato Windmar',            desc:'Contrato_Windmar',        tags:['req'] },
+      { n:14, name:'ID Deudor',                   desc:'ID_Deudor',               tags:['req'] },
+      { n:15, name:'Diagrama Sistema GD',         desc:'Diagrama_Sistema_GD',     tags:['req'] },
+      { n:16, name:'Permit / Acuerdo NEM',        desc:'Permit_NEM',              tags:['req'] },
+      { n:17, name:'Sign Off',                    desc:'Sign_Off',                tags:['req'] },
+      { n:18, name:'Reporte de Fotos',            desc:'Reporte_Fotos',           tags:['req'] }
+    ]
+  },
+  cuenta_cob: {
+    label: 'Cuenta Propia — Con Codeudor',
+    docs: [
+      { n:2,  name:'E-Sign Disclosure',           desc:'ESign_Disclosure',        tags:['req'] },
+      { n:3,  name:'Oriental Approval Letter',    desc:'Oriental_Approval_Letter', tags:['req','auto'] },
+      { n:4,  name:'Contrato Oriental (Bundle)',  desc:'Contrato_Oriental',       tags:['req'] },
+      { n:5,  name:'Credit Score (Borrower)',     desc:'Credit_Score_Borrower',   tags:['req'] },
+      { n:6,  name:'Borrower — Soft Pull',        desc:'Soft_Pull_Borrower',      tags:['req'] },
+      { n:7,  name:'Borrower — Hard Pull',        desc:'Hard_Pull_Borrower',      tags:['req'] },
+      { n:8,  name:'Credit Score (Coborrower)',   desc:'Credit_Score_Coborrower', tags:['req','cob'] },
+      { n:9,  name:'Coborrower — Soft Pull',      desc:'Soft_Pull_Coborrower',    tags:['req','cob'] },
+      { n:10, name:'Coborrower — Hard Pull',      desc:'Hard_Pull_Coborrower',    tags:['opt','cob'] },
+      { n:11, name:'Planilla Deudor',             desc:'Planilla_Deudor',         tags:['req','income'] },
+      { n:12, name:'Planilla Estatal Deudor',     desc:'Planilla_Estatal_Deudor', tags:['req','income'] },
+      { n:13, name:'Planilla Codeudor',           desc:'Planilla_Codeudor',       tags:['req','cob','income'] },
+      { n:14, name:'CATASTRO / CRIM',             desc:'CATASTRO_CRIM',           tags:['req'] },
+      { n:15, name:'Factura LUMA',                desc:'Factura_LUMA',            tags:['req'] },
+      { n:16, name:'Contrato Windmar',            desc:'Contrato_Windmar',        tags:['req'] },
+      { n:17, name:'ID Deudor',                   desc:'ID_Deudor',               tags:['req'] },
+      { n:18, name:'ID Codeudor',                 desc:'ID_Codeudor',             tags:['req','cob'] },
+      { n:19, name:'Diagrama Sistema GD',         desc:'Diagrama_Sistema_GD',     tags:['req'] },
+      { n:20, name:'Permit / Acuerdo NEM',        desc:'Permit_NEM',              tags:['req'] },
+      { n:21, name:'Sign Off',                    desc:'Sign_Off',                tags:['req'] },
+      { n:22, name:'Reporte de Fotos',            desc:'Reporte_Fotos',           tags:['req'] }
+    ]
+  },
+  ret_solo: {
+    label: 'Retirado — Sin Codeudor',
+    docs: [
+      { n:2,  name:'E-Sign Disclosure',           desc:'ESign_Disclosure',        tags:['req'] },
+      { n:3,  name:'Oriental Approval Letter',    desc:'Oriental_Approval_Letter', tags:['req','auto'] },
+      { n:4,  name:'Contrato Oriental (Bundle)',  desc:'Contrato_Oriental',       tags:['req'] },
+      { n:5,  name:'Credit Score Disclosure',     desc:'Credit_Score_Borrower',   tags:['req'] },
+      { n:6,  name:'Borrower — Soft Pull',        desc:'Soft_Pull_Borrower',      tags:['req'] },
+      { n:7,  name:'Borrower — Hard Pull',        desc:'Hard_Pull_Borrower',      tags:['req'] },
+      { n:8,  name:'Certificado Pensión',         desc:'Certificado_Pension',     tags:['req','income'] },
+      { n:9,  name:'Estado Bancario 1',           desc:'Estado_Bancario_1',       tags:['req','income'] },
+      { n:10, name:'Estado Bancario 2',           desc:'Estado_Bancario_2',       tags:['req','income'] },
+      { n:11, name:'Estado Bancario 3',           desc:'Estado_Bancario_3',       tags:['req','income'] },
+      { n:12, name:'Seguro Social',               desc:'Seguro_Social',           tags:['opt','income'] },
+      { n:13, name:'CATASTRO / CRIM',             desc:'CATASTRO_CRIM',           tags:['req'] },
+      { n:14, name:'Factura LUMA',                desc:'Factura_LUMA',            tags:['req'] },
+      { n:15, name:'Contrato Windmar',            desc:'Contrato_Windmar',        tags:['req'] },
+      { n:16, name:'ID Deudor',                   desc:'ID_Deudor',               tags:['req'] },
+      { n:17, name:'Diagrama Sistema GD',         desc:'Diagrama_Sistema_GD',     tags:['req'] },
+      { n:18, name:'Permit / Acuerdo NEM',        desc:'Permit_NEM',              tags:['req'] },
+      { n:19, name:'Sign Off',                    desc:'Sign_Off',                tags:['req'] },
+      { n:20, name:'Reporte de Fotos',            desc:'Reporte_Fotos',           tags:['req'] }
+    ]
+  },
+  ret_cob: {
+    label: 'Retirado — Con Codeudor',
+    docs: [
+      { n:2,  name:'E-Sign Disclosure',           desc:'ESign_Disclosure',        tags:['req'] },
+      { n:3,  name:'Oriental Approval Letter',    desc:'Oriental_Approval_Letter', tags:['req','auto'] },
+      { n:4,  name:'Contrato Oriental (Bundle)',  desc:'Contrato_Oriental',       tags:['req'] },
+      { n:5,  name:'Credit Score (Borrower)',     desc:'Credit_Score_Borrower',   tags:['req'] },
+      { n:6,  name:'Borrower — Soft Pull',        desc:'Soft_Pull_Borrower',      tags:['req'] },
+      { n:7,  name:'Borrower — Hard Pull',        desc:'Hard_Pull_Borrower',      tags:['req'] },
+      { n:8,  name:'Credit Score (Coborrower)',   desc:'Credit_Score_Coborrower', tags:['req','cob'] },
+      { n:9,  name:'Coborrower — Soft Pull',      desc:'Soft_Pull_Coborrower',    tags:['req','cob'] },
+      { n:10, name:'Coborrower — Hard Pull',      desc:'Hard_Pull_Coborrower',    tags:['opt','cob'] },
+      { n:11, name:'Pensión Deudor',              desc:'Pension_Deudor',          tags:['req','income'] },
+      { n:12, name:'SS Deudor',                   desc:'SS_Deudor',               tags:['req','income'] },
+      { n:13, name:'Estado Bancario Deudor',      desc:'Estado_Bancario_Deudor',  tags:['req','income'] },
+      { n:14, name:'SS Codeudor',                 desc:'SS_Codeudor',             tags:['req','cob','income'] },
+      { n:15, name:'Estado Bancario Codeudor',    desc:'Estado_Bancario_Codeudor', tags:['req','cob','income'] },
+      { n:16, name:'CATASTRO / CRIM',             desc:'CATASTRO_CRIM',           tags:['req'] },
+      { n:17, name:'Factura LUMA',                desc:'Factura_LUMA',            tags:['req'] },
+      { n:18, name:'Contrato Windmar',            desc:'Contrato_Windmar',        tags:['req'] },
+      { n:19, name:'ID Deudor',                   desc:'ID_Deudor',               tags:['req'] },
+      { n:20, name:'ID Codeudor',                 desc:'ID_Codeudor',             tags:['req','cob'] },
+      { n:21, name:'Diagrama Sistema GD',         desc:'Diagrama_Sistema_GD',     tags:['req'] },
+      { n:22, name:'Permit / Acuerdo NEM',        desc:'Permit_NEM',              tags:['req'] },
+      { n:23, name:'Sign Off',                    desc:'Sign_Off',                tags:['req'] },
+      { n:24, name:'Reporte de Fotos',            desc:'Reporte_Fotos',           tags:['req'] }
+    ]
+  }
+};
+
+// ═══════════════════════════════════════════════════════════════════
+// STATE
+// ═══════════════════════════════════════════════════════════════════
+let currentDocs = [];
+let fileMap = {};      // docId → File object
+let naSet = new Set();
+let modalDoc = null;
+let dragId = null;
+let docIdCounter = 0;
+
+function generateId() { return 'doc_' + (++docIdCounter); }
+
+function loadProfile() {
+  const p = document.getElementById('profile').value;
+  const profile = PROFILES[p];
+  currentDocs = profile.docs.map(d => ({ ...d, id: generateId() }));
+  fileMap = {};
+  naSet = new Set();
+  renderAll();
+}
+
+function resetOrder() {
+  loadProfile();
+  showToast('✓ Orden restaurado');
+}
+
+function addDoc() {
+  const maxN = Math.max(...currentDocs.map(d => d.n), 0);
+  currentDocs.push({ id:generateId(), n:maxN+1, name:'Nuevo documento', desc:'Nuevo_Documento', tags:['opt'] });
+  renderAll();
+}
+
+// ═══════════════════════════════════════════════════════════════════
+// RENDER
+// ═══════════════════════════════════════════════════════════════════
+function renderAll() {
+  if (currentDocs.length === 0) { loadProfile(); return; }
+
+  const appId = document.getElementById('appId').value || 'APPID';
+  const sorted = [...currentDocs].sort((a,b) => a.n - b.n);
+  const list = document.getElementById('docList');
+
+  let html = '';
+  sorted.forEach(doc => {
+    const isDone = !!fileMap[doc.id];
+    const isNA = naSet.has(doc.id);
+    const isDragOver = dragId === doc.id;
+
+    const isMissingReq = !isDone && !isNA && doc.tags.includes('req');
+
+    let cls = 'doc-row';
+    if (isDone)       cls += ' is-done';
+    if (isNA)         cls += ' is-na';
+    if (isDragOver)   cls += ' drag-over';
+    if (isMissingReq) cls += ' is-missing';
+
+    const tagsHTML = (doc.tags||[]).map(t => {
+      if (t==='req') return `<span class="tag tag-req">REQ</span>`;
+      if (t==='opt') return `<span class="tag tag-opt">OPT</span>`;
+      if (t==='cob') return `<span class="tag tag-cob">👥 CODEUDOR</span>`;
+      if (t==='income') return `<span class="tag tag-income">💰 INGRESO</span>`;
+      if (t==='auto') return `<span class="tag tag-auto">🤖 AUTO</span>`;
+      return '';
+    }).join('');
+
+    const finalName = isDone ? fileMap[doc.id].name : `${String(doc.n).padStart(2,'0')}_${doc.desc}_${appId}.pdf`;
+
+    html += `
+    <div class="${cls}"
+         data-doc-id="${doc.id}"
+         ondragover="handleDragOver(event, '${doc.id}')"
+         ondragleave="handleDragLeave(event)"
+         ondrop="handleDrop(event, '${doc.id}')"
+         onclick="openModal('${doc.id}')">
+      <div class="num-control" onclick="event.stopPropagation()">
+        <div class="num-pill" title="Clic para editar número" onclick="editNum('${doc.id}')">${String(doc.n).padStart(2,'0')}</div>
+        <div class="num-arrows">
+          <div class="num-arrow" onclick="shiftNum('${doc.id}',-1)" title="Número anterior">▲</div>
+          <div class="num-arrow" onclick="shiftNum('${doc.id}',1)"  title="Número siguiente">▼</div>
+        </div>
+      </div>
+      <div>
+        <div class="doc-name" contenteditable="true" onblur="updateName('${doc.id}', this.textContent)" onclick="event.stopPropagation()">${doc.name}</div>
+        <div class="doc-tags">${tagsHTML}</div>
+      </div>
+      <div class="drop-zone ${isDone?'done':''} ${isDragOver?'drag-over':''} ${isNA?'na':''}">
+        ${isDone ? `<span style="font-size:14px">✓</span><div style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-family:monospace;font-size:10px">${finalName}</div>`
+                 : isNA ? `<span style="font-style:italic">— No aplica —</span>`
+                        : isDragOver ? `<span>↓ Suelta aquí</span>`
+                                     : `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>Arrastra PDF · o clic`}
+      </div>
+      <div style="display:flex;gap:4px;justify-content:flex-end">
+        <button class="na-btn" onclick="event.stopPropagation();toggleNA('${doc.id}')" title="${isNA?'Reactivar':'Marcar N/A'}">${isNA?'↶':'N/A'}</button>
+      </div>
+    </div>`;
+  });
+
+  list.innerHTML = html;
+  updateStats();
+}
+
+function shiftNum(docId, delta) {
+  const doc = currentDocs.find(d => d.id === docId);
+  if (!doc) return;
+  const newN = doc.n + delta;
+  if (newN < 1 || newN > 99) return;
+  // Swap with any doc that has the target number
+  const conflict = currentDocs.find(d => d.n === newN && d.id !== docId);
+  if (conflict) conflict.n = doc.n;
+  doc.n = newN;
+  renderAll();
+}
+
+function editNum(docId) {
+  const doc = currentDocs.find(d => d.id === docId);
+  if (!doc) return;
+  const val = prompt(`Nuevo número para "${doc.name}":`, doc.n);
+  if (val === null) return;
+  const n = parseInt(val);
+  if (isNaN(n) || n < 1 || n > 99) { showToast('⚠ Número inválido (1-99)', true); return; }
+  const conflict = currentDocs.find(d => d.n === n && d.id !== docId);
+  if (conflict) conflict.n = doc.n; // swap
+  doc.n = n;
+  renderAll();
+}
+
+function updateModuleBadge() {
+  const sel = document.getElementById('moduleId');
+  const labels = {
+    '68c2aed92495668a3f248835': 'Oriental Solar Loans',
+    '69148fa4b34911f902270af3': 'Para Uso Interno WHF',
+    '680b4e14d6ebf6166397f1eb': 'Roofing Loan',
+    '6878ad6fe74373a1dc87fc4e': 'WHF Financing'
+  };
+  const name = labels[sel.value] || 'Portal de Documentos';
+  document.getElementById('tbTitle').textContent = `Portal de Documentos · ${name}`;
+}
+
+function updateName(docId, text) {
+  const doc = currentDocs.find(d => d.id === docId);
+  if (doc && text.trim()) {
+    doc.name = text.trim();
+    doc.desc = text.trim().replace(/[^a-zA-Z0-9\s]/g,'').trim().split(/\s+/).slice(0,5).join('_');
+  }
+  renderAll();
+}
+
+function toggleNA(docId) {
+  if (naSet.has(docId)) naSet.delete(docId);
+  else { naSet.add(docId); delete fileMap[docId]; }
+  renderAll();
+}
+
+// ═══════════════════════════════════════════════════════════════════
+// DRAG & DROP
+// ═══════════════════════════════════════════════════════════════════
+function handleDragOver(e, docId) {
+  e.preventDefault();
+  dragId = docId;
+  renderAll();
+}
+
+function handleDragLeave(e) {
+  e.preventDefault();
+  dragId = null;
+  renderAll();
+}
+
+function handleDrop(e, docId) {
+  e.preventDefault();
+  dragId = null;
+  const f = e.dataTransfer.files?.[0];
+  if (f) {
+    fileMap[docId] = f;
+    naSet.delete(docId);
+  }
+  renderAll();
+}
+
+// ═══════════════════════════════════════════════════════════════════
+// MODAL
+// ═══════════════════════════════════════════════════════════════════
+function openModal(docId) {
+  if (naSet.has(docId)) return;
+  const doc = currentDocs.find(d => d.id === docId);
+  if (!doc) return;
+  modalDoc = doc;
+
+  const appId = document.getElementById('appId').value || 'APPID';
+  const file = fileMap[doc.id];
+  const finalName = `${String(doc.n).padStart(2,'0')}_${doc.desc}_${appId}.pdf`;
+
+  const modal = document.getElementById('modal');
+  modal.style.display = 'flex';
+  modal.className = 'modal-overlay';
+  modal.innerHTML = `
+    <div class="modal" onclick="event.stopPropagation()">
+      <div class="modal-header">
+        <h3>📄 ${doc.name}</h3>
+        <button class="modal-close" onclick="closeModal()">×</button>
+      </div>
+      <div class="modal-body">
+        <div class="modal-field">
+          <label>Nombre del documento</label>
+          <input type="text" value="${doc.name}" id="modalName" />
+        </div>
+        <div class="modal-field">
+          <label>Nombre final del archivo</label>
+          <input type="text" value="${finalName}" disabled style="background:#f9fafb;color:#6b7280" />
+        </div>
+        <div class="modal-dropzone" id="modalDrop"
+             ondragover="event.preventDefault(); this.classList.add('drag-over')"
+             ondragleave="event.preventDefault(); this.classList.remove('drag-over')"
+             ondrop="handleModalDrop(event)">
+          ${file ? `<div class="mdz-icon">✓</div><div class="mdz-title">${file.name}</div><div class="mdz-sub">Haz clic para cambiar</div>`
+                 : `<div class="mdz-icon">📥</div><div class="mdz-title">Arrastra tu PDF aquí</div><div class="mdz-sub">o haz clic para seleccionar</div>`}
+          <input type="file" accept="*/*" style="display:none" id="modalFileInput" onchange="handleModalFile(event)" />
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="modal-btn modal-btn-secondary" onclick="closeModal()">Cancelar</button>
+        <button class="modal-btn modal-btn-primary" onclick="saveModal()">Guardar</button>
+      </div>
+    </div>
+  `;
+
+  document.getElementById('modalDrop').onclick = () => document.getElementById('modalFileInput').click();
+}
+
+function closeModal() {
+  document.getElementById('modal').style.display = 'none';
+  modalDoc = null;
+}
+
+function handleModalDrop(e) {
+  e.preventDefault();
+  e.target.classList.remove('drag-over');
+  const f = e.dataTransfer.files?.[0];
+  if (f && modalDoc) {
+    fileMap[modalDoc.id] = f;
+    openModal(modalDoc.id);
+  }
+}
+
+function handleModalFile(e) {
+  const f = e.target.files?.[0];
+  if (f && modalDoc) {
+    fileMap[modalDoc.id] = f;
+    openModal(modalDoc.id);
+  }
+}
+
+function saveModal() {
+  if (!modalDoc) return;
+  const newName = document.getElementById('modalName').value.trim();
+  if (newName) {
+    modalDoc.name = newName;
+    modalDoc.desc = newName.replace(/[^a-zA-Z0-9\s]/g,'').trim().split(/\s+/).slice(0,5).join('_');
+  }
+  closeModal();
+  renderAll();
+}
+
+// ═══════════════════════════════════════════════════════════════════
+// STATS
+// ═══════════════════════════════════════════════════════════════════
+function updateStats() {
+  let ok=0, missing=0, na=0;
+  currentDocs.forEach(doc => {
+    if (naSet.has(doc.id)) { na++; return; }
+    if (fileMap[doc.id]) ok++; else if (doc.tags.includes('req')) missing++;
+  });
+  const total = currentDocs.filter(d => d.tags.includes('req') && !naSet.has(d.id)).length;
+  const pct = total > 0 ? Math.round(ok/total*100) : 0;
+
+  document.getElementById('progressBar').style.width = pct + '%';
+  document.getElementById('progressText').textContent = `${ok} / ${total} archivos · ${pct}%`;
+  document.getElementById('statOk').textContent = ok;
+  document.getElementById('statMissing').textContent = missing;
+  document.getElementById('statNA').textContent = na;
+
+  // Warning label — no block
+  const btn = document.getElementById('submitBtn');
+  if (missing > 0) {
+    btn.title = `⚠ Faltan ${missing} doc(s) requeridos — puedes enviar igual`;
+    btn.style.boxShadow = '0 4px 16px rgba(249,115,22,0.5)';
+  } else {
+    btn.title = '';
+    btn.style.boxShadow = '0 4px 16px rgba(247,148,29,0.3)';
+  }
+  document.getElementById('submitBtn').disabled = false;
+}
+
+// ═══════════════════════════════════════════════════════════════════
+// SUBMIT TO DIGIFI PRODUCTION
+// ═══════════════════════════════════════════════════════════════════
+async function submitDocs() {
+  const appId = document.getElementById('appId').value.trim();
+  const productId = document.getElementById('moduleId').value;
+  if (!appId) { showToast('⚠ Falta Application #', true); return; }
+
+  const toUpload = currentDocs
+    .filter(d => !naSet.has(d.id) && fileMap[d.id])
+    .sort((a,b) => a.n - b.n);
+
+  if (toUpload.length === 0) { showToast('⚠ No hay archivos para subir', true); return; }
+
+  const moduleName = document.getElementById('moduleId').selectedOptions[0].text;
+
+  // Show live log panel
+  let logEl = document.getElementById('apiLog');
+  if (!logEl) {
+    logEl = document.createElement('div');
+    logEl.id = 'apiLog';
+    logEl.style.cssText = 'margin-top:16px;background:#0f172a;color:#94a3b8;font-family:monospace;font-size:11px;border-radius:10px;padding:16px;line-height:1.8;max-height:320px;overflow-y:auto;';
+    document.querySelector('.submit-wrap').insertAdjacentElement('afterend', logEl);
+  }
+  const log = (msg, color='#94a3b8') => {
+    logEl.innerHTML += `<div style="color:${color}">${new Date().toLocaleTimeString()} — ${msg}</div>`;
+    logEl.scrollTop = logEl.scrollHeight;
+  };
+  logEl.innerHTML = '';
+  log(`🚀 Iniciando envío de ${toUpload.length} archivo(s)`, '#f8fafc');
+  log(`📦 Módulo: ${moduleName}`, '#94a3b8');
+  log(`🔗 Proxy: ${DIGIFI_CONFIG.proxyURL} → whfinancial.digifi.io`, '#94a3b8');
+  log(`🆔 Application #: ${appId}`, '#94a3b8');
+  log('─'.repeat(50), '#334155');
+
+  document.getElementById('submitBtn').disabled = true;
+  document.getElementById('submitBtn').textContent = '⏳ Subiendo...';
+
+  let success = 0, errors = 0;
+
+  for (const doc of toUpload) {
+    const file = fileMap[doc.id];
+    const ext = file.name.includes('.') ? file.name.split('.').pop() : 'pdf';
+    const finalName = `${String(doc.n).padStart(2,'0')}_${doc.desc}_${appId}.${ext}`;
+
+    log(`📄 Subiendo: <span style="color:#fbbf24">${finalName}</span>`);
+
+    try {
+      const formData = new FormData();
+      formData.append('file', file, finalName);
+      formData.append('applicationId', appId);
+      formData.append('productId', productId);
+
+      const response = await fetch(DIGIFI_CONFIG.proxyURL, {
+        method: 'POST',
+        body: formData
+        // No headers needed — proxy adds the API key server-side
+      });
+
+      const responseText = await response.text();
+      if (response.ok) {
+        success++;
+        log(`   ✅ ${response.status} OK → ${responseText.slice(0,120)}`, '#4ade80');
+      } else {
+        errors++;
+        log(`   ❌ ${response.status} ERROR → ${responseText.slice(0,200)}`, '#f87171');
+        log(`   💡 Headers enviados: api-key: ...${DIGIFI_CONFIG.apiKey.slice(-8)}, api-version: ${DIGIFI_CONFIG.apiVersion}`, '#64748b');
+      }
+    } catch (err) {
+      errors++;
+      if (err.message.includes('CORS') || err.message.includes('fetch')) {
+        log(`   🚫 CORS / Red: ${err.message}`, '#f87171');
+        log(`   💡 Esto significa que el navegador bloquea la solicitud. El portal debe estar hosteado en el mismo dominio o DiGiFi debe permitir CORS.`, '#fbbf24');
+      } else {
+        log(`   ❌ Error: ${err.message}`, '#f87171');
+      }
+    }
+
+    await new Promise(r => setTimeout(r, 400));
+  }
+
+  log('─'.repeat(50), '#334155');
+  if (errors === 0) {
+    log(`✅ COMPLETADO: ${success} archivo(s) enviado(s) correctamente`, '#4ade80');
+    showToast(`✓ ${success} archivos enviados · ${moduleName}`, false, true);
+  } else {
+    log(`⚠ RESULTADO: ${success} éxito · ${errors} error(es) — revisa arriba`, '#fbbf24');
+    showToast(`⚠ ${success} enviados · ${errors} errores — ver log abajo`, true);
+  }
+
+  document.getElementById('submitBtn').disabled = false;
+  document.getElementById('submitBtn').textContent = '✓ Enviar a DiGiFi';
+}
+
+// ═══════════════════════════════════════════════════════════════════
+// TOAST
+// ═══════════════════════════════════════════════════════════════════
+function showToast(msg, isErr, isSuccess) {
+  const toast = document.getElementById('toast');
+  toast.textContent = msg;
+  toast.className = isErr ? 'show err' : isSuccess ? 'show success' : 'show';
+  setTimeout(() => toast.className = isErr ? 'err' : isSuccess ? 'success' : '', 4000);
+}
+
+// ═══════════════════════════════════════════════════════════════════
+// INIT
+// ═══════════════════════════════════════════════════════════════════
+loadProfile();
+</script>
+</body>
+</html>

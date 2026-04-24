@@ -1,0 +1,13 @@
+{
+  "name": "whf-portal",
+  "version": "1.0.0",
+  "description": "WHF Financial - Portal de Documentos Oriental Solar Loans",
+  "private": true,
+  "scripts": {
+    "dev": "vercel dev",
+    "deploy": "vercel --prod"
+  },
+  "dependencies": {
+    "node-fetch": "^3.3.2"
+  }
+}
