@@ -723,7 +723,7 @@ function updateStats() {
 // SUBMIT TO DIGIFI PRODUCTION
 // ═══════════════════════════════════════════════════════════════════
 async function submitDocs() {
-  const appId = document.getElementById('appId').value.trim();
+  const appId    = document.getElementById('appId').value.trim();
   const productId = document.getElementById('moduleId').value;
   if (!appId) { showToast('⚠ Falta Application #', true); return; }
 
@@ -735,7 +735,7 @@ async function submitDocs() {
 
   const moduleName = document.getElementById('moduleId').selectedOptions[0].text;
 
-  // Show live log panel
+  // Log panel
   let logEl = document.getElementById('apiLog');
   if (!logEl) {
     logEl = document.createElement('div');
@@ -748,70 +748,59 @@ async function submitDocs() {
     logEl.scrollTop = logEl.scrollHeight;
   };
   logEl.innerHTML = '';
-  log(`🚀 Iniciando envío de ${toUpload.length} archivo(s)`, '#f8fafc');
+
+  log(`🚀 Iniciando envío BATCH de ${toUpload.length} archivo(s)`, '#f8fafc');
   log(`📦 Módulo: ${moduleName}`, '#94a3b8');
-  log(`🔗 Proxy: ${DIGIFI_CONFIG.proxyURL} → whfinancial.digifi.io`, '#94a3b8');
   log(`🆔 Application #: ${appId}`, '#94a3b8');
   log('─'.repeat(50), '#334155');
 
   document.getElementById('submitBtn').disabled = true;
   document.getElementById('submitBtn').textContent = '⏳ Subiendo...';
 
-  let success = 0, errors = 0;
+  try {
+    // Build ONE FormData with ALL files (batch endpoint)
+    const formData = new FormData();
+    formData.append('applicationId', appId);
+    formData.append('productId', productId);
 
-  for (const doc of toUpload) {
-    const file = fileMap[doc.id];
-    const ext = file.name.includes('.') ? file.name.split('.').pop() : 'pdf';
-    const finalName = `${String(doc.n).padStart(2,'0')}_${doc.desc}_${appId}.${ext}`;
+    toUpload.forEach(doc => {
+      const file = fileMap[doc.id];
+      const ext  = file.name.includes('.') ? file.name.split('.').pop() : 'pdf';
+      const finalName = `${String(doc.n).padStart(2,'0')}_${doc.desc}_${appId}.${ext}`;
+      formData.append('files', file, finalName);
+      log(`📄 Agregando: <span style="color:#fbbf24">${finalName}</span>`);
+    });
 
-    log(`📄 Subiendo: <span style="color:#fbbf24">${finalName}</span>`);
+    log('─'.repeat(50), '#334155');
+    log(`📤 Enviando ${toUpload.length} archivo(s) en 1 request...`, '#94a3b8');
 
-    try {
-      const formData = new FormData();
-      formData.append('file', file, finalName);
-      formData.append('applicationId', appId);
-      formData.append('productId', productId);
+    const response = await fetch('/api/upload', {
+      method: 'POST',
+      body: formData
+    });
 
-      const response = await fetch(DIGIFI_CONFIG.proxyURL, {
-        method: 'POST',
-        body: formData
-        // No headers needed — proxy adds the API key server-side
-      });
+    const responseText = await response.text();
 
-      const responseText = await response.text();
-      if (response.ok) {
-        success++;
-        log(`   ✅ ${response.status} OK → ${responseText.slice(0,120)}`, '#4ade80');
-      } else {
-        errors++;
-        log(`   ❌ ${response.status} ERROR → ${responseText.slice(0,200)}`, '#f87171');
-        log(`   💡 Headers enviados: api-key: ...${DIGIFI_CONFIG.apiKey.slice(-8)}, api-version: ${DIGIFI_CONFIG.apiVersion}`, '#64748b');
-      }
-    } catch (err) {
-      errors++;
-      if (err.message.includes('CORS') || err.message.includes('fetch')) {
-        log(`   🚫 CORS / Red: ${err.message}`, '#f87171');
-        log(`   💡 Esto significa que el navegador bloquea la solicitud. El portal debe estar hosteado en el mismo dominio o DiGiFi debe permitir CORS.`, '#fbbf24');
-      } else {
-        log(`   ❌ Error: ${err.message}`, '#f87171');
-      }
+    if (response.ok) {
+      log(`✅ ${response.status} OK → ${responseText.slice(0,200)}`, '#4ade80');
+      log(`✅ COMPLETADO: ${toUpload.length} archivo(s) enviado(s) correctamente`, '#4ade80');
+      showToast(`✓ ${toUpload.length} archivos enviados · ${moduleName}`);
+    } else {
+      log(`❌ ${response.status} ERROR → ${responseText.slice(0,300)}`, '#f87171');
+      if (response.status === 401) log(`💡 API Key inválida — verificar con JM`, '#fbbf24');
+      if (response.status === 404) log(`💡 applicationId no encontrado en DiGiFi`, '#fbbf24');
+      if (response.status === 422) log(`💡 Formato incorrecto — revisar campos requeridos`, '#fbbf24');
+      showToast(`❌ Error ${response.status} — ver log`, true);
     }
-
-    await new Promise(r => setTimeout(r, 400));
-  }
-
-  log('─'.repeat(50), '#334155');
-  if (errors === 0) {
-    log(`✅ COMPLETADO: ${success} archivo(s) enviado(s) correctamente`, '#4ade80');
-    showToast(`✓ ${success} archivos enviados · ${moduleName}`, false, true);
-  } else {
-    log(`⚠ RESULTADO: ${success} éxito · ${errors} error(es) — revisa arriba`, '#fbbf24');
-    showToast(`⚠ ${success} enviados · ${errors} errores — ver log abajo`, true);
+  } catch (err) {
+    log(`❌ Error de red: ${err.message}`, '#f87171');
+    showToast('❌ Error de conexión — ver log', true);
   }
 
   document.getElementById('submitBtn').disabled = false;
   document.getElementById('submitBtn').textContent = '✓ Enviar a DiGiFi';
 }
+
 
 // ═══════════════════════════════════════════════════════════════════
 // TOAST
