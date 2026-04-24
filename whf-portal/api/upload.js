@@ -11,7 +11,7 @@ export const config = {
 };
 
 const DIGIFI_API_KEY     = process.env.DIGIFI_API_KEY;
-const DIGIFI_BASE_URL    = 'https://whfinancial.digifi.io/api/application-documents';
+const DIGIFI_BASE_URL    = 'https://whfinancial.digifi.io/saml/66f3d2149dd975d4dd338ac1/assert';
 const DIGIFI_API_VERSION = '2024-02-26';
 
 export default async function handler(req, res) {
